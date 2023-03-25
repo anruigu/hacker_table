@@ -1,3 +1,5 @@
 openai
 slack_sdk
 pandas
+gspread
+df2gspread

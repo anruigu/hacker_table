@@ -5,9 +5,8 @@ from slack_sdk.errors import SlackApiError
 from gpt3 import info_extract
 import pandas as pd
 import gspread
-import df2gspread as d2g
 
-with open('secrets.json') as f:
+with open('secrets_keys.json') as f:
     secrets = json.load(f)
   
 openai.api_key = secrets['openai']
@@ -83,4 +82,9 @@ for convo in conversation_history:
     res.iloc[counter, 3] = raw_ans['building']
     counter+=1
 
-res.to_csv("{}.csv".format(filename))
+res = res.fillna('')
+gc = gspread.service_account()
+sh = gc.open("GPT-4 Hackathon Intros")
+sh.sheet1.update([res.columns.values.tolist()]+res.values.tolist())
+# gd.set_with_dataframe(sh, res)
+# res.to_csv("{}.csv".format(filename))

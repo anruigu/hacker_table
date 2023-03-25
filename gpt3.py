@@ -3,7 +3,7 @@ import os
 import json
 import pickle
 
-with open('secrets.json') as f:
+with open('secrets_keys.json') as f:
     secrets = json.load(f)
   
 os.environ['OPENAI_API_KEY'] = secrets['openai']
