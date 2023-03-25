@@ -4,8 +4,8 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from gpt3 import info_extract
 import pandas as pd
-
-from collections import defaultdict
+import gspread
+import df2gspread as d2g
 
 with open('secrets.json') as f:
     secrets = json.load(f)
@@ -55,7 +55,7 @@ except SlackApiError as e:
 
 filename = 'test'
 N_ROWS = len(conversation_history)
-res = pd.DataFrame(columns=['name', 'about','building'], index=range(N_ROWS))
+res = pd.DataFrame(columns=['name', 'email','about','building'], index=range(N_ROWS))
 NUM_FIELDS = len(res.columns) - 1
 counter = 0
 # make data table
@@ -68,14 +68,19 @@ for convo in conversation_history:
             user=user_id
         )
         name = result['user']['profile']['real_name_normalized']
+        try:
+            email = result['user']['profile']['email']
+        except KeyError:
+            continue # not a real user
         res.iloc[counter, 0] = name
+        res.iloc[counter, 1] = email
     except SlackApiError as e:
         print("Error fetching conversations: {}".format(e))
     convo_s = json.dumps(convo)
     raw_ans = info_extract(convo_s, name) # .replace('\n','')
     # print(raw_ans)
-    res.iloc[counter, 1] = raw_ans['about']
-    res.iloc[counter, 2] = raw_ans['building']
+    res.iloc[counter, 2] = raw_ans['about']
+    res.iloc[counter, 3] = raw_ans['building']
     counter+=1
 
 res.to_csv("{}.csv".format(filename))
